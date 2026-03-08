@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    /* ── Language & Environment ─────────────────────────────────────── */
+    "target": "ES2020",
+    "lib": ["ES2020"],
+
+    /* ── Module System ──────────────────────────────────────────────── */
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+
+    /* ── Paths ──────────────────────────────────────────────────────── */
+    "rootDir": "./",
+    "outDir": "./dist",
+
+    /* ── Decorators (required by tsoa + reflect-metadata) ───────────── */
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+
+    /* ── Type Checking ──────────────────────────────────────────────── */
+    "strict": false,
+    "noImplicitAny": false,
+    "skipLibCheck": true,
+
+    /* ── Output ─────────────────────────────────────────────────────── */
+    "declaration": true,
+    "sourceMap": true
+  },
+  "include": [
+    "./**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build"
+  ]
+}

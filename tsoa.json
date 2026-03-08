@@ -1,0 +1,34 @@
+{
+  "entryFile": "server.ts",
+  "noImplicitAdditionalProperties": "throw-on-extras",
+  "controllerPathGlobs": ["controllers/DashboardController.ts"],
+
+  "spec": {
+    "outputDirectory": "build",
+    "specVersion": 3,
+    "title": "Dashboard Backup & Sharing API",
+    "description": "Production-ready API for creating, backing up, retrieving, and sharing dashboards. Built with Node.js, Express, and MongoDB.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Dashboard API Support"
+    },
+    "license": "MIT",
+    "servers": [
+      {
+        "url": "http://localhost:5000/api",
+        "description": "Local development server"
+      }
+    ],
+    "tags": [
+      {
+        "name": "Dashboard",
+        "description": "Dashboard backup, retrieval, update, deletion, and sharing operations"
+      }
+    ]
+  },
+
+  "routes": {
+    "routesDir": "routes",
+    "routesFileName": "routes.ts"
+  }
+}

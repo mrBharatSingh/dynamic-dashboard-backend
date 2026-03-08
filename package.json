@@ -1,0 +1,36 @@
+{
+  "name": "dashboard-backup-api",
+  "version": "1.0.0",
+  "description": "Production-ready Node.js + Express + MongoDB backend for Dashboard Backup and Sharing",
+  "main": "dist/server.js",
+  "scripts": {
+    "tsoa:routes": "tsoa routes",
+    "tsoa:spec": "tsoa spec",
+    "build": "npm run tsoa:routes && npm run tsoa:spec && tsc",
+    "start": "node dist/server.js",
+    "predev": "npm run tsoa:routes",
+    "dev": "nodemon --watch src/**/*.ts --ext ts --exec \"ts-node server.ts\""
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "mongoose": "^8.4.0",
+    "reflect-metadata": "^0.2.2",
+    "swagger-ui-express": "^5.0.1",
+    "tsoa": "^6.6.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.14.0",
+    "@types/swagger-ui-express": "^4.1.6",
+    "nodemon": "^3.1.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT"
+}
