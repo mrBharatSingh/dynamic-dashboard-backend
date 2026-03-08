@@ -24,6 +24,7 @@ import path from 'path';
 import swaggerUi from 'swagger-ui-express';
 
 import connectDB from './config/db';
+import Dashboard from './models/Dashboard';
 
 // ── tsoa generated routes ─────────────────────────────────────────────────────
 // This file is auto-created by `npm run tsoa:routes`. If missing, run that
@@ -36,8 +37,55 @@ dotenv.config();
 const app = express();
 const PORT = Number(process.env.PORT) || 5000;
 
-// ─── Database ─────────────────────────────────────────────────────────────────
-connectDB();
+// ─── Database + startup migration ─────────────────────────────────────────────
+// We must de-duplicate existing records BEFORE Mongoose tries to build the
+// new unique compound index on {email, dashboardName}.  If duplicates exist
+// when Mongoose runs ensureIndexes(), the index creation fails with E11000.
+//
+// Strategy: for each (email, dashboardName) group that has more than one
+// document, keep the most-recently-updated one and delete the rest.
+async function deduplicateDashboards(): Promise<void> {
+  try {
+    const duplicates = await Dashboard.aggregate([
+      {
+        $group: {
+          _id: { email: '$email', dashboardName: '$dashboardName' },
+          ids: { $push: '$_id' },
+          count: { $sum: 1 },
+          latest: { $max: '$updatedAt' },
+        },
+      },
+      { $match: { count: { $gt: 1 } } },
+    ]);
+
+    if (duplicates.length === 0) return;
+
+    console.log(
+      `[Migration] Found ${duplicates.length} duplicate dashboard group(s). Deduplicating…`,
+    );
+
+    for (const group of duplicates) {
+      // Fetch all docs in this group sorted newest-first; keep the first, delete the rest
+      const docs = await Dashboard.find({ _id: { $in: group.ids } })
+        .sort({ updatedAt: -1 })
+        .select('_id')
+        .lean();
+
+      const idsToDelete = docs.slice(1).map((d) => d._id);
+      await Dashboard.deleteMany({ _id: { $in: idsToDelete } });
+      console.log(
+        `[Migration] Removed ${idsToDelete.length} duplicate(s) for ` +
+          `"${group._id.dashboardName}" (${group._id.email}).`,
+      );
+    }
+
+    console.log('[Migration] Deduplication complete.');
+  } catch (err: any) {
+    console.error('[Migration] Deduplication error:', err.message);
+  }
+}
+
+connectDB().then(deduplicateDashboards);
 
 // ─── Core Middleware ──────────────────────────────────────────────────────────
 

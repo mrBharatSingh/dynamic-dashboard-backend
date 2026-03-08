@@ -52,9 +52,10 @@ export class DashboardController extends Controller {
   // ── 1. Backup Dashboard ────────────────────────────────────────────────────
 
   /**
-   * Saves a new dashboard to MongoDB for the given user.
-   * If the user already has a dashboard with the same name a second document
-   * is still created – callers must check for duplicates themselves.
+   * Saves or updates a dashboard for the given user.
+   * If a dashboard with the same email + dashboardName already exists it is
+   * updated (widgets replaced). Otherwise a new document is created.
+   * This prevents duplicate dashboard entries in the database.
    */
   @Post('backup')
   @SuccessResponse('201', 'Dashboard backed up successfully')
@@ -93,11 +94,37 @@ export class DashboardController extends Controller {
         };
       }
 
-      const dashboard = await Dashboard.create({
+      const filter = {
         email: email.trim().toLowerCase(),
         dashboardName: dashboardName.trim(),
-        widgets: widgets ?? [],
+      };
+      const update = { $set: { widgets: widgets ?? [] } };
+
+      // Primary path: atomic upsert guarded by the unique compound index.
+      // If the unique index detects a concurrent duplicate insert (E11000)
+      // we fall back to a plain update so the caller always gets a result.
+      let dashboard = await Dashboard.findOneAndUpdate(filter, update, {
+        upsert: true,
+        new: true,
+        runValidators: true,
+        // setDefaultsOnInsert so that isShared defaults to false on new docs
+        setDefaultsOnInsert: true,
+      }).catch(async (err: any) => {
+        // E11000 = duplicate key; means a concurrent upsert already inserted
+        // the document – just update it now that it definitely exists.
+        if (err.code === 11000) {
+          return Dashboard.findOneAndUpdate(filter, update, {
+            new: true,
+            runValidators: true,
+          });
+        }
+        throw err;
       });
+
+      if (!dashboard) {
+        this.setStatus(500);
+        return { success: false, message: 'Failed to backup dashboard.' };
+      }
 
       this.setStatus(201);
       return {
@@ -348,7 +375,8 @@ export class DashboardController extends Controller {
       // BASE_URL is the frontend origin (set in .env); falls back to API root
       const baseUrl =
         process.env.BASE_URL || `http://localhost:${process.env.PORT ?? 5000}`;
-      const shareUrl = `/dashboard/shared/${dashboardId}`;
+      // Use hash-based path so the link works with Angular's HashLocationStrategy
+      const shareUrl = `/#/dashboard/shared/${dashboardId}`;
 
       return {
         success: true,

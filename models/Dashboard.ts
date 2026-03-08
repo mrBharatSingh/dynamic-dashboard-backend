@@ -98,8 +98,13 @@ const dashboardSchema = new Schema<IDashboard>(
   },
 );
 
-// ─── Compound Index ────────────────────────────────────────────────────────────
-// Optimises the most common query pattern: all dashboards for a given user
+// ─── Indexes ───────────────────────────────────────────────────────────────────
+// Unique compound index: one entry per (user, dashboard name).
+// This is the database-level guard against duplicate backups and also makes
+// findOneAndUpdate upserts fully atomic – no race conditions.
+dashboardSchema.index({ email: 1, dashboardName: 1 }, { unique: true });
+
+// Secondary index for fast newest-first queries per user
 dashboardSchema.index({ email: 1, createdAt: -1 });
 
 // ─── Model ─────────────────────────────────────────────────────────────────────
