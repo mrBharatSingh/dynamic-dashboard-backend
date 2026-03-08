@@ -112,3 +112,51 @@ export interface ErrorResponse {
   success: false;
   message: string;
 }
+
+// ─── Tool Link ────────────────────────────────────────────────────────────────
+
+/** A single tool URL entry managed by admins and shown to all users. */
+export interface ToolLink {
+  /** MongoDB ObjectId string */
+  _id: string;
+  /** Display name of the tool */
+  toolName: string;
+  /** Short description of the tool */
+  description: string;
+  /** Full URL the tool links to */
+  url: string;
+  /** ISO 8601 creation timestamp */
+  createdAt: string;
+  /** ISO 8601 last-update timestamp */
+  updatedAt: string;
+}
+
+/** Request body for POST /api/tools */
+export interface AddToolBody {
+  /** Display name of the tool */
+  toolName: string;
+  /** Short description of the tool */
+  description: string;
+  /** Full URL the tool links to */
+  url: string;
+}
+
+/** Returned by GET /api/tools */
+export interface ToolsListResponse {
+  success: boolean;
+  count: number;
+  data: ToolLink[];
+}
+
+/** Returned by POST /api/tools */
+export interface ToolResponse {
+  success: boolean;
+  message?: string;
+  data?: ToolLink;
+}
+
+/** Returned by DELETE /api/tools/:toolId */
+export interface DeleteToolResponse {
+  success: boolean;
+  message: string;
+}

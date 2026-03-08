@@ -1,8 +1,9 @@
 {
   "entryFile": "server.ts",
   "noImplicitAdditionalProperties": "throw-on-extras",
-  "controllerPathGlobs": ["controllers/DashboardController.ts"],
-
+  "controllerPathGlobs": [
+    "controllers/*.ts"
+  ],
   "spec": {
     "outputDirectory": "build",
     "specVersion": 3,
@@ -23,10 +24,13 @@
       {
         "name": "Dashboard",
         "description": "Dashboard backup, retrieval, update, deletion, and sharing operations"
+      },
+      {
+        "name": "Tools",
+        "description": "Tool URL management for the Address Book / Links tab"
       }
     ]
   },
-
   "routes": {
     "routesDir": "routes",
     "routesFileName": "routes.ts"
